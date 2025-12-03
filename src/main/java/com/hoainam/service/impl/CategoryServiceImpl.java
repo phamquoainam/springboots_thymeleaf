@@ -3,6 +3,8 @@ package com.hoainam.service.impl;
 import java.util.List; 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.hoainam.entity.Category;
@@ -40,6 +42,16 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.existsById(id)) {
             categoryRepository.deleteById(id);
         }
+    }
+    
+    @Override
+    public Page<Category> findAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Category> search(String name, Pageable pageable) {
+        return categoryRepository.findByCategoryNameContaining(name, pageable);
     }
 
 }

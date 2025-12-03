@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+
+<head>
+    <title>Quản lý Video</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Video Management</h1>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-video me-1"></i> Danh sách Video
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row mt-2 mb-3">
+                        <div class="col-md-6">
+                            <form th:action="@{/admin/videos/searchpaginated}" method="get">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="title" 
+                                           th:value="${title}" placeholder="Nhập tiêu đề video...">
+                                    <button class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a th:href="@{/admin/videos/create}" class="btn btn-success"><i class="fas fa-plus"></i> Thêm mới</a>
+                        </div>
+                    </div>
+
+                    <div th:if="${!videoPage.hasContent()}" class="alert alert-warning">
+                        Không tìm thấy video nào.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table th:if="${videoPage.hasContent()}" class="table table-bordered table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Poster</th>
+                                    <th>Tiêu đề</th>
+                                    <th>Danh mục</th>
+                                    <th>Lượt xem</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="v : ${videoPage.content}">
+                                    <td class="text-center">
+                                        <div th:if="${v.poster != null}">
+                                            <img th:src="@{'/uploads/' + ${v.poster}}" 
+                                                 style="width:70px;height:70px;object-fit:cover;border-radius:5px;"
+                                                 onerror="this.src='https://via.placeholder.com/70?text=No+Img'">
+                                        </div>
+                                    </td>
+                                    <td th:text="${v.title}"></td>
+                                    <td>
+                                        <span th:if="${v.category != null}" th:text="${v.category.categoryName}" class="badge bg-info text-dark"></span>
+                                        <span th:unless="${v.category != null}" class="text-muted">Chưa phân loại</span>
+                                    </td>
+                                    <td th:text="${v.views}"></td>
+                                    <td class="text-center">
+                                        <span th:if="${v.active}" class="badge bg-success">Active</span>
+                                        <span th:unless="${v.active}" class="badge bg-secondary">Hidden</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{'/admin/videos/update/' + ${v.videoId}}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                                        <a th:href="@{'/admin/videos/delete/' + ${v.videoId}}" class="btn btn-danger btn-sm" onclick="return confirm('Xóa video này?')"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer text-muted" th:if="${videoPage.totalPages > 0}">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${videoPage.number == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/videos/searchpaginated(title=${title}, size=${videoPage.size}, page=1)}">Đầu</a>
+                            </li>
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:classappend="${pageNumber == videoPage.number + 1} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/videos/searchpaginated(title=${title}, size=${videoPage.size}, page=${pageNumber})}" th:text="${pageNumber}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${videoPage.number == videoPage.totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/videos/searchpaginated(title=${title}, size=${videoPage.size}, page=${videoPage.totalPages})}">Cuối</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

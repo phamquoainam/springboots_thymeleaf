@@ -1,5 +1,7 @@
 package com.hoainam.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository; 
 
 import com.hoainam.entity.User;
@@ -14,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmail(String email);
 
     User findByEmail(String email);
+    
+    Page<User> findByUsernameContaining(String username, Pageable pageable);
 }

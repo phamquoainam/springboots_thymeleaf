@@ -2,10 +2,18 @@ package com.hoainam.controller.admin;
 
 import java.io.IOException; 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -107,5 +115,49 @@ public class CategoryController {
     public String deleteCategory(Model model, @ModelAttribute("newCategory") Category category) {
         categoryService.delete(category.getCategoryId());
         return "redirect:/admin/categories";
+    }
+    
+    @GetMapping("/searchpaginated")
+    public String search(Model model,
+                         @RequestParam(name = "name", required = false) String name,
+                         @RequestParam("page") Optional<Integer> page,
+                         @RequestParam("size") Optional<Integer> size) {
+
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(5);
+
+        // Tạo Pageable: trang hiện tại, kích thước, sắp xếp theo tên
+        Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by("categoryName"));
+        
+        Page<Category> resultPage = null;
+
+        // LOGIC CHÍNH: Nếu có từ khóa "name" thì tìm kiếm, không thì lấy tất cả
+        if (StringUtils.hasText(name)) {
+            resultPage = categoryService.search(name, pageable);
+            model.addAttribute("name", name); // Gửi lại từ khóa ra View để giữ trong ô input
+        } else {
+            resultPage = categoryService.findAll(pageable);
+        }
+
+        // LOGIC TÍNH TOÁN SỐ TRANG (để vẽ thanh 1, 2, 3...)
+        int totalPages = resultPage.getTotalPages();
+        if (totalPages > 0) {
+            int start = Math.max(1, currentPage - 2);
+            int end = Math.min(currentPage + 2, totalPages);
+
+            if (totalPages > 5) {
+                if (end == totalPages) start = end - 5;
+                else if (start == 1) end = start + 5;
+            }
+            
+            List<Integer> pageNumbers = IntStream.rangeClosed(start, end)
+                    .boxed()
+                    .collect(Collectors.toList());
+            
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+
+        model.addAttribute("categoryPage", resultPage);
+        return "admin/categories/searchpaging";
     }
 }

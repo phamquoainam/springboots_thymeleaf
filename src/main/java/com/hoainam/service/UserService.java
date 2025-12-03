@@ -1,6 +1,9 @@
 package com.hoainam.service;
 
-import java.util.List; 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.hoainam.entity.User;
 
@@ -29,4 +32,8 @@ public interface UserService {
     boolean checkExitsPhone(String phone);
 
     boolean updatePassword(String email, String password);
+    
+    Page<User> findAll(Pageable pageable);
+    
+    Page<User> search(String username, Pageable pageable);
 }

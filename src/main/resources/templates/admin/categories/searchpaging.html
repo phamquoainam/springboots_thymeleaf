@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+
+<head>
+    <title>Quản lý Category</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Category Management</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Danh sách Category</li>
+            </ol>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i> Danh sách Category
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row mt-2 mb-3">
+                        <div class="col-md-6">
+                            <form th:action="@{/admin/categories/searchpaginated}" method="get">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="name" 
+                                           th:value="${name}" 
+                                           placeholder="Nhập tên category để tìm...">
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Tìm kiếm
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a th:href="@{/admin/categories/create}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Thêm mới
+                            </a>
+                        </div>
+                    </div>
+
+                    <div th:if="${!categoryPage.hasContent()}" class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Không tìm thấy category nào với từ khóa này.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table th:if="${categoryPage.hasContent()}" class="table table-bordered table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ảnh</th> <th>Tên Category</th>
+                                    <th>Code</th> <th>Trạng thái</th> <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="category : ${categoryPage.content}">
+                                    <td th:text="${category.categoryId}"></td>
+                                    
+                                    <td class="text-center">
+                                        <div th:if="${category.images != null}">
+                                            <img th:src="@{'/uploads/' + ${category.images}}"
+                                                 style="width:60px; height:60px; object-fit:cover; border-radius:5px;"
+                                                 onerror="this.src='https://via.placeholder.com/60?text=No+Img'">
+                                        </div>
+                                        <div th:unless="${category.images != null}">
+                                            <span class="text-muted small">No Image</span>
+                                        </div>
+                                    </td>
+
+                                    <td th:text="${category.categoryName}"></td>
+                                    <td th:text="${category.categoryCode}"></td>
+                                    
+                                    <td class="text-center">
+                                        <span th:if="${category.status}" class="badge bg-success">Active</span>
+                                        <span th:unless="${category.status}" class="badge bg-danger">Inactive</span>
+                                    </td>
+                                    
+                                    <td>
+                                        <a th:href="@{'/admin/categories/update/' + ${category.categoryId}}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </a>
+                                        <a th:href="@{'/admin/categories/delete/' + ${category.categoryId}}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Bạn có chắc chắn muốn xóa category này?')">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer text-muted" th:if="${categoryPage.totalPages > 0}">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            
+                            <li class="page-item" th:classappend="${categoryPage.number == 0} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/admin/categories/searchpaginated(name=${name}, size=${categoryPage.size}, page=1)}">Đầu</a>
+                            </li>
+
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}"
+                                th:classappend="${pageNumber == categoryPage.number + 1} ? 'active'">
+                                <a class="page-link"
+                                   th:href="@{/admin/categories/searchpaginated(name=${name}, size=${categoryPage.size}, page=${pageNumber})}"
+                                   th:text="${pageNumber}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${categoryPage.number == categoryPage.totalPages - 1} ? 'disabled'">
+                                <a class="page-link"
+                                   th:href="@{/admin/categories/searchpaginated(name=${name}, size=${categoryPage.size}, page=${categoryPage.totalPages})}">Cuối</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

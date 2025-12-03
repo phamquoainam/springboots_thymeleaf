@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+
+<head>
+    <title>Quản lý User</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">User Management</h1>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-users me-1"></i> Danh sách User
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row mt-2 mb-3">
+                        <div class="col-md-6">
+                            <form th:action="@{/admin/users/searchpaginated}" method="get">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="name" 
+                                           th:value="${name}" placeholder="Nhập username...">
+                                    <button class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a th:href="@{/admin/users/create}" class="btn btn-success"><i class="fas fa-plus"></i> Thêm mới</a>
+                        </div>
+                    </div>
+
+                    <div th:if="${!userPage.hasContent()}" class="alert alert-warning">
+                        Không tìm thấy user nào.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table th:if="${userPage.hasContent()}" class="table table-bordered table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Avatar</th>
+                                    <th>Username</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${userPage.content}">
+                                    <td class="text-center">
+                                        <div th:if="${user.images != null}">
+                                            <img th:src="@{'/uploads/' + ${user.images}}" 
+                                                 style="width:50px;height:50px;object-fit:cover;border-radius:50%;"
+                                                 onerror="this.src='https://via.placeholder.com/50?text=U'">
+                                        </div>
+                                    </td>
+                                    <td th:text="${user.username}"></td>
+                                    <td th:text="${user.fullname}"></td>
+                                    <td th:text="${user.email}"></td>
+                                    <td class="text-center">
+                                        <span th:if="${user.admin}" class="badge bg-danger">ADMIN</span>
+                                        <span th:unless="${user.admin}" class="badge bg-info text-dark">USER</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span th:if="${user.active}" class="badge bg-success">Active</span>
+                                        <span th:unless="${user.active}" class="badge bg-secondary">Locked</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{'/admin/users/update/' + ${user.username}}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                                        <a th:href="@{'/admin/users/delete/' + ${user.username}}" class="btn btn-danger btn-sm" onclick="return confirm('Xóa user này?')"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer text-muted" th:if="${userPage.totalPages > 0}">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${userPage.number == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users/searchpaginated(name=${name}, size=${userPage.size}, page=1)}">Đầu</a>
+                            </li>
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:classappend="${pageNumber == userPage.number + 1} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/users/searchpaginated(name=${name}, size=${userPage.size}, page=${pageNumber})}" th:text="${pageNumber}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${userPage.number == userPage.totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/users/searchpaginated(name=${name}, size=${userPage.size}, page=${userPage.totalPages})}">Cuối</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
